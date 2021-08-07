@@ -143,6 +143,16 @@ class Manager():
     def __init__(self, screen):
         self.screen = screen
         self.condition = 0
+        self.game_array = [0, 0, 0,
+                           0, 0, 0,
+                           0, 0, 0,
+                           ]
+        self.game_over = False
+        self.start_menu = True
+
+        # чей ход. 0 - не важно, 1 - нолик, 2 - крестик
+        self.whose_move = 0
+
 
     def next_condition(self):
         '''
@@ -159,7 +169,74 @@ class Manager():
         pygame.display.update()
 
     def start_menu(self):
-        self.main_field = game_field.GameField
+        pass
+
+    def make_a_move(self, event: pygame.event, coordinates: tuple):
+        if event.type == pygame.QUIT:
+            print(pygame.QUIT)
+            pygame.quit()
+            sys.exit()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+
+            # 1 - это нолик в массиве
+            if event.button == 1:
+
+                wich_cell = check_square(i.pos)
+                right_pos = coordinates_for_draw(wich_cell)
+
+                if (whose_move == 0 or whose_move == 1) and game_array[wich_cell] == 0:
+                    draw_circle_game(screen, right_pos)
+
+                    # передаёт ход крестикам
+                    whose_move = 2
+                    game_array[wich_cell] = 1
+
+                    print_game_array(game_array)
+                    print()
+
+                    if check_victory(game_array, 1, screen):
+                        pygame.display.update()
+                        for i in events:
+                            if i.type == pygame.MOUSEBUTTONDOWN:
+                                game_array = new_game(screen)
+                                whose_move = 0
+                                break
+                        pygame.time.delay(1000)
+
+                pygame.display.update()
+
+            # 2 - это крестик в массиве
+            elif event.button == 3:
+                # print(i.pos)
+                # print(type(i.pos))
+
+                # получение координаты, куда рисовать
+                wich_cell = check_square(i.pos)
+                right_pos = coordinates_for_draw(wich_cell)
+
+                if (whose_move == 0 or whose_move == 2) and game_array[wich_cell] == 0:
+                    draw_cross_game(screen, right_pos)
+
+                    # передаёт ход ноликам
+                    whose_move = 1
+                    game_array[wich_cell] = 2
+
+                    print_game_array(game_array)
+                    print()
+
+                    if check_victory(game_array, 2, screen):
+                        pygame.display.update()
+                        for i in events:
+                            if i.type == pygame.MOUSEBUTTONDOWN:
+                                game_array = new_game(screen)
+                                whose_move = 0
+                                break
+                        pygame.time.delay(1000)
+
+                pygame.display.update()
+            elif event.button == 2:
+                screen.fill(WHITE)
+                pygame.display.update()
 
 
     def playing_game(self):
