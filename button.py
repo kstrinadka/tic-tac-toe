@@ -39,6 +39,7 @@ class Button(GameObject):
     def is_not_pressed(self):
         self.color = BLUE
         self.draw(self.screen)
+        return True
 
     def draw(self, surface):
         pygame.draw.rect(surface, self.color, self.bounds)

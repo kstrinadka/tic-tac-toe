@@ -2,7 +2,6 @@ import pygame
 import sys
 from colors import *
 from winning_positions import *
-import game_field
 import button
 
 
@@ -139,8 +138,8 @@ def new_game(screen):
     return matrix
 
 
-class Manager():
-    def __init__(self, screen):
+class Manager:
+    def __init__(self, screen: pygame.Surface):
         self.screen = screen
         self.condition = 0
         self.game_array = [0, 0, 0,
@@ -148,11 +147,10 @@ class Manager():
                            0, 0, 0,
                            ]
         self.game_over = False
-        self.start_menu = True
 
         # чей ход. 0 - не важно, 1 - нолик, 2 - крестик
         self.whose_move = 0
-
+        self.winner = 0
 
     def next_condition(self):
         '''
@@ -166,12 +164,91 @@ class Manager():
         self.condition = (self.condition + 1) % 3
 
     def main_cycle(self):
-        pygame.display.update()
+        while 1:
+            clock.tick(60)
 
-    def start_menu(self):
-        pass
+            events = pygame.event.get()
+            # print(events)
+            for i in events:
+                if self.condition == 0:
+                    self.start_menu(i)
 
-    def make_a_move(self, event: pygame.event, coordinates: tuple):
+
+                if self.condition == 1:
+                    draw_field(self.screen)
+                    self.make_a_move(i)
+
+                events = []
+
+                if self.condition == 2:
+                    pygame.time.delay(100)
+                    self.victory(i)
+
+            pygame.display.update()
+
+
+    def victory(self, event: pygame.event):
+
+
+        self.screen.fill((0, 0, 0))
+        if self.winner == 1:
+            draw_circle_game(self.screen, (300, 66))
+        if self.winner == 2:
+            draw_cross_game(self.screen, (300, 66))
+        end_button = button.Button(self.screen, 250, 200, 20, 20, 'Win', 80)
+        if event.type == pygame.QUIT:
+            print(pygame.QUIT)
+            print(i)
+            print(i.type)
+            pygame.quit()
+            sys.exit()
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+
+            print('down')
+            end_button.is_pressed(event.pos)
+
+        if event.type == pygame.MOUSEBUTTONUP:
+            print('up')
+            print('Im here')
+            end_button.is_not_pressed()
+            pygame.time.delay(1000)
+            self.next_condition()
+            self.screen.fill((0, 0, 0))
+
+
+
+    def start_menu(self, i: pygame.event):
+
+        self.winner = 0
+        self.screen.fill((0, 0, 0))
+        start_button = button.Button(self.screen, 250, 200, 20, 20, 'Start', 80)
+
+        if i.type == pygame.QUIT:
+            print(pygame.QUIT)
+            print(i)
+            print(i.type)
+            pygame.quit()
+            sys.exit()
+
+        if i.type == pygame.MOUSEBUTTONDOWN:
+            print(i.pos)
+
+            print('down')
+            start_button.is_pressed(i.pos)
+
+        if i.type == pygame.MOUSEBUTTONUP:
+            print('up')
+            start_button.is_not_pressed()
+            pygame.time.delay(50)
+            self.next_condition()
+            self.screen.fill((0, 0, 0))
+            self.game_array = new_game(self.screen)
+            self.whose_move = 0
+
+    # делает ход
+    def make_a_move(self, event: pygame.event):
+
         if event.type == pygame.QUIT:
             print(pygame.QUIT)
             pygame.quit()
@@ -180,64 +257,64 @@ class Manager():
 
             # 1 - это нолик в массиве
             if event.button == 1:
-
-                wich_cell = check_square(i.pos)
+                wich_cell = check_square(event.pos)
                 right_pos = coordinates_for_draw(wich_cell)
 
-                if (whose_move == 0 or whose_move == 1) and game_array[wich_cell] == 0:
+                if (self.whose_move == 0 or self.whose_move == 1) and self.game_array[wich_cell] == 0:
                     draw_circle_game(screen, right_pos)
 
                     # передаёт ход крестикам
-                    whose_move = 2
-                    game_array[wich_cell] = 1
-
-                    print_game_array(game_array)
+                    self.whose_move = 2
+                    self.game_array[wich_cell] = 1
+                    print_game_array(self.game_array)
                     print()
 
-                    if check_victory(game_array, 1, screen):
+                    if check_victory(self.game_array, 1, screen):
                         pygame.display.update()
-                        for i in events:
-                            if i.type == pygame.MOUSEBUTTONDOWN:
-                                game_array = new_game(screen)
-                                whose_move = 0
-                                break
+                        self.winner = 1
+                        self.next_condition()
+                        '''
+                                                if event.type == pygame.MOUSEBUTTONDOWN:
+                            self.game_array = new_game(screen)
+                            self.whose_move = 0
+                            
+                        '''
                         pygame.time.delay(1000)
 
                 pygame.display.update()
 
             # 2 - это крестик в массиве
             elif event.button == 3:
-                # print(i.pos)
-                # print(type(i.pos))
-
                 # получение координаты, куда рисовать
-                wich_cell = check_square(i.pos)
+                wich_cell = check_square(event.pos)
                 right_pos = coordinates_for_draw(wich_cell)
 
-                if (whose_move == 0 or whose_move == 2) and game_array[wich_cell] == 0:
+                if (self.whose_move == 0 or self.whose_move == 2) and self.game_array[wich_cell] == 0:
                     draw_cross_game(screen, right_pos)
 
                     # передаёт ход ноликам
-                    whose_move = 1
-                    game_array[wich_cell] = 2
+                    self.whose_move = 1
+                    self.game_array[wich_cell] = 2
 
-                    print_game_array(game_array)
+                    print_game_array(self.game_array)
                     print()
 
-                    if check_victory(game_array, 2, screen):
+                    if check_victory(self.game_array, 2, screen):
                         pygame.display.update()
-                        for i in events:
-                            if i.type == pygame.MOUSEBUTTONDOWN:
-                                game_array = new_game(screen)
-                                whose_move = 0
-                                break
+                        self.next_condition()
+                        self.winner = 2
+                        '''
+                                                if event.type == pygame.MOUSEBUTTONDOWN:
+                            self.game_array = new_game(screen)
+                            self.whose_move = 0
+                        '''
+
                         pygame.time.delay(1000)
 
                 pygame.display.update()
             elif event.button == 2:
                 screen.fill(WHITE)
                 pygame.display.update()
-
 
     def playing_game(self):
         pass
@@ -292,19 +369,21 @@ whose_move = 0
 
 text = '3 cunts'
 
-f1 = pygame.font.Font(None, 36)
-text1 = f1.render(text, True, RED)
+# f1 = pygame.font.Font(None, 36)
+# text1 = f1.render(text, True, RED)
 
-print(text1.get_rect())
+# print(text1.get_rect())
 
 # pygame.draw.rect(screen, GREEN, self.bounds)
 
-screen.blit(text1, (50, 50))
+# screen.blit(text1, (50, 50))
 pygame.display.update()
 
 text = '3 cunts'
 
-button_start = button.Button(screen, 250, 200, 20, 20, text, 30)
+# button_start = button.Button(screen, 250, 200, 20, 20, text, 80)
+
+manager.main_cycle()
 
 while 1:
     clock.tick(60)
@@ -323,10 +402,10 @@ while 1:
             print(i.pos)
 
             print('down')
-            button_start.is_pressed(i.pos)
+            # button_start.is_pressed(i.pos)
 
         if i.type == pygame.MOUSEBUTTONUP:
             print('up')
-            button_start.is_not_pressed()
+            # button_start.is_not_pressed()
 
     pygame.display.update()
